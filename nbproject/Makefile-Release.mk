@@ -34,7 +34,8 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/Main.o
+	${OBJECTDIR}/Main.o \
+	${OBJECTDIR}/DBentry.o
 
 
 # C Compiler Flags
@@ -65,6 +66,11 @@ ${OBJECTDIR}/Main.o: Main.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/Main.o Main.cpp
+
+${OBJECTDIR}/DBentry.o: DBentry.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/DBentry.o DBentry.cpp
 
 # Subprojects
 .build-subprojects:
