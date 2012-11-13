@@ -9,8 +9,11 @@ class TreeDB {
 private:
    TreeNode* root;
    int probesCount;
+   
    // You will need to add additional private functions
-
+   void deleteTree(TreeNode *currNode);
+   DBentry *find_in_bst(TreeNode *curr, string name);
+   int count_active(TreeNode *curr);
 public:
    // the default constructor, creates an empty database.
    TreeDB();

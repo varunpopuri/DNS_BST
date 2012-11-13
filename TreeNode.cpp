@@ -43,3 +43,8 @@ TreeNode*  TreeNode::getRight() const{
 DBentry*  TreeNode::getEntry() const{
     return entryPtr;
 }
+
+void TreeNode::printNode(){
+    // Calls the operator<< for DBentry
+    cout<<DBentry;
+}
