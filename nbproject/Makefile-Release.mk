@@ -35,7 +35,8 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/Main.o \
-	${OBJECTDIR}/DBentry.o
+	${OBJECTDIR}/DBentry.o \
+	${OBJECTDIR}/TreeNode.o
 
 
 # C Compiler Flags
@@ -71,6 +72,11 @@ ${OBJECTDIR}/DBentry.o: DBentry.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/DBentry.o DBentry.cpp
+
+${OBJECTDIR}/TreeNode.o: TreeNode.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/TreeNode.o TreeNode.cpp
 
 # Subprojects
 .build-subprojects:

@@ -17,6 +17,7 @@
                    projectFiles="true">
       <itemPath>DBentry.cpp</itemPath>
       <itemPath>Main.cpp</itemPath>
+      <itemPath>TreeNode.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
