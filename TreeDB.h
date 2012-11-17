@@ -14,6 +14,11 @@ private:
    void deleteTree(TreeNode *currNode);
    DBentry *find_in_bst(TreeNode *curr, string name);
    int count_active(TreeNode *curr);
+   TreeNode *getRoot();
+   TreeNode *findParentToNodeWithEntry(DBentry *_entry);
+   int countChildren(TreeNode *curr);
+   TreeNode *findRightMost(TreeNode *curr);
+   
 public:
    // the default constructor, creates an empty database.
    TreeDB();
