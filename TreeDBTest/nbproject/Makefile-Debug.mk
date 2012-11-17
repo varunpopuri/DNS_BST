@@ -34,6 +34,8 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/_ext/1472/DBentry.o \
+	${OBJECTDIR}/_ext/1472/TreeNode.o \
 	${OBJECTDIR}/testTreeDB.o
 
 
@@ -60,6 +62,16 @@ LDLIBSOPTIONS=
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/treedbtest.exe: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/treedbtest ${OBJECTFILES} ${LDLIBSOPTIONS} 
+
+${OBJECTDIR}/_ext/1472/DBentry.o: ../DBentry.cpp 
+	${MKDIR} -p ${OBJECTDIR}/_ext/1472
+	${RM} $@.d
+	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/1472/DBentry.o ../DBentry.cpp
+
+${OBJECTDIR}/_ext/1472/TreeNode.o: ../TreeNode.cpp 
+	${MKDIR} -p ${OBJECTDIR}/_ext/1472
+	${RM} $@.d
+	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/1472/TreeNode.o ../TreeNode.cpp
 
 ${OBJECTDIR}/testTreeDB.o: testTreeDB.cpp 
 	${MKDIR} -p ${OBJECTDIR}
