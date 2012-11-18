@@ -199,20 +199,22 @@ bool TreeDB::remove(string name){
     }
     //The entry exists at the current DBentry
     //Find the node connected to the DBentry, and delete it in the correct manner.
-    TreeNode *parent = findParentToNodeWithEntry(toDelete);
+    TreeNode *parent = getParent(toDelete);
     TreeNode *reqNode = NULL;
-    
+    TreeNode *temp = parent->getLeft();
+   // cout<<"Parent->getLeft() is "<<parent->getLeft()<<endl;
     // ///////////////////////////////////////////////////////////////////////////////////////////////////
     // Checking if the node to be deleted is on the left or the right
     // ///////////////////////////////////////////////////////////////////////////////////////////////////
-    
+    if(parent != NULL && parent->getEntry() != NULL)
+        cout<<"Parent's entry (should be D for the single leaf, A for the one-subtree): "<<parent->getEntry()->getName()<<endl;
     // Define an operator< function for the treeNode class? Then, I can just to parent < name => parent->getRight()
     cout<<"\tChecking if the required node is this entry's left or right child...\n";
-    if(parent->getLeft()->getEntry()->getName() == name){
+    if(parent->getLeft()!= NULL && parent->getLeft()->getEntry()->getName() == name){
         cout<<"\t\t Left Child \n";
         reqNode = parent->getLeft();
     }
-    else{
+    else if(parent->getRight() !=NULL && parent->getRight()->getEntry()->getName() == name){
         cout<<"\t\t Right Child.\n";
         reqNode = parent->getRight();
     }
@@ -220,7 +222,11 @@ bool TreeDB::remove(string name){
     //  ///////////////////////////////////////////////////////////////////////////////////////////////////
     // Counting the number of children to parent                                                        //
     // ///////////////////////////////////////////////////////////////////////////////////////////////////
-    int childCount = countChildren(reqNode);
+    int childCount = 0;
+    if(parent->getLeft() != NULL)
+        childCount += countChildren(parent->getLeft());
+    if(parent->getRight() != NULL)
+        childCount += countChildren(parent->getRight());
     
     
     if(reqNode == NULL){        //This will never happen...we know that the entry exists.
@@ -279,7 +285,7 @@ bool TreeDB::remove(string name){
         if(countChildren(max_left)){
             //If the maximum node has a left subtree
             //find the parent to the maximum node
-            max_left_parent = findParentToNodeWithEntry(max_left->getEntry());
+            max_left_parent = getParent(max_left->getEntry());
             //Set max_left's left subtree equal to max_left_parent's right pointer
             max_left_parent->setRight(max_left->getLeft());
         }
@@ -302,11 +308,14 @@ bool TreeDB::remove(string name){
     }
 }
 
-TreeNode *TreeDB::findParentToNodeWithEntry(DBentry* _entry){
-    if(root == NULL)    //Empty tree
+TreeNode *TreeDB::getParent(DBentry* _entry){
+    if(root == NULL){    //Empty tree
+        cout<<"getParent for an empty tree. Returning NULL\n";
         return NULL;
+    }
+    cout<<"Finding parent\n";
     TreeNode *reqNode = root;
-    while(reqNode->getEntry() != _entry){
+    while(reqNode->getLeft()->getEntry() != _entry && reqNode->getRight()->getEntry() != _entry){
         cout<<"Searching tree for the node attached to the required entry...\n";
         if(reqNode->getEntry()->getName() > _entry->getName()){
             cout<<"\tGoing left\n";
@@ -318,6 +327,7 @@ TreeNode *TreeDB::findParentToNodeWithEntry(DBentry* _entry){
         }
     }
     cout<<"Found Node before the one attached to entry "<<_entry->getName()<<endl;
+    cout<<"\ti.e. parent = "<<reqNode->getEntry()->getName()<<endl;
     cout<<"Returning this node. Check if it's the left or right child that needs to be deleted\n";
 
     return reqNode;
@@ -325,7 +335,11 @@ TreeNode *TreeDB::findParentToNodeWithEntry(DBentry* _entry){
 
 int TreeDB::countChildren(TreeNode* curr){
     int count = 0;
-    cout<<"Counting the number of children for Node with entry \""<<curr->getEntry()->getName()<<"|\"\n";
+    if(curr == NULL){
+        cout<<"counting children for NULL!! Returning 0\n";
+        return count;
+    }
+    cout<<"Counting the number of children for Node with entry \""<<curr->getEntry()->getName()<<"\"\n";
     if(curr->getLeft() != NULL){
         cout<<"\tcurr has a left child\n";
         count++;
@@ -408,7 +422,7 @@ ostream& operator<< (ostream& out, const TreeDB& rhs){
 // You *may* choose to implement the function below to help print the 
 // tree.  You do not have to implement this function if you do not wish to.
 ostream& operator<< (ostream& out, TreeNode* rhs){                                      //<< overload for TreeNode...basically, we can cout<<currNode in the provios function.
-    cout<<"Printing Noded\n";
+    cout<<"\nPrinting Node\n";
     if(rhs == NULL)
         return out; //Don't want to dereference NULL
     //Recurse all the way to the left
@@ -416,7 +430,7 @@ ostream& operator<< (ostream& out, TreeNode* rhs){                              
         cout<<"\tGoing Left\n";
         out<<rhs->getLeft();
     }
-    cout<<"Reached a leaf. Printing it.\n";
+    //cout<<"Printing \""<<rhs->getEntry()->getName()<<"\"\n";
     rhs->printNode();
     if(rhs->getRight() != NULL){
         cout<<"\tGoing Right\n";
