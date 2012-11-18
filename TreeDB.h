@@ -13,14 +13,20 @@ private:
    // You will need to add additional private functions
    void deleteTree(TreeNode *currNode);
    DBentry *find_in_bst(TreeNode *curr, string name);
+   TreeNode *find_node_in_bst(TreeNode *node, string name);
    bool insert_in_bst(TreeNode *ins, TreeNode *curr);
    int count_active(TreeNode *curr, int& activeCount) const;
    TreeNode *getRoot() const;   //Made this const...maybe it's causing issues?
    TreeNode *getRightMost(TreeNode *curr);
-   TreeNode *getParent(DBentry *_entry);
+   TreeNode *getParent(TreeNode *curr, string name);
    int countChildren(TreeNode *curr);
    TreeNode *findRightMost(TreeNode *curr);
    
+   //Remove functions
+   bool removeRoot(string name);
+   bool removeLeaf(TreeNode *curr, string name);
+   bool removeWithOneSubtree(TreeNode *curr, string name);
+   bool removeWithTwoSubtrees(TreeNode *curr, string name);
 public:
    // the default constructor, creates an empty database.
    TreeDB();

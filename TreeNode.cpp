@@ -55,5 +55,5 @@ DBentry*  TreeNode::getEntry() const{
 
 void TreeNode::printNode(){
     // Calls the operator<< for DBentry
-    cout<<getEntry();
+    cout<<this->getEntry()<<endl;
 }
