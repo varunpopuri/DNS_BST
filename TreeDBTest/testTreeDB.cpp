@@ -21,8 +21,10 @@ using namespace std;
 // the default constructor, creates an empty database.
 TreeDB::TreeDB(){
     cout<<"constructing a new TreeDB, using the default constructor\n";
+    root = new TreeNode;
     root->setLeft(NULL);
     root->setRight(NULL);
+    probesCount = 0;
     cout<<"Set root to ("<<root->getLeft()<<","<<root->getRight()<<")\n";
     cout<<"Leaving the constructor\n";
 }
@@ -34,7 +36,7 @@ TreeDB::~TreeDB(){
     cout<<"Deleted all the entries\n";
 }
 
-TreeNode *TreeDB::getRoot(){
+TreeNode *TreeDB::getRoot() const{
     cout<<"Entered getRoot(). Returning root = "<<root<<endl;
     return root;
 }
@@ -67,7 +69,7 @@ bool TreeDB::insert(DBentry* newEntry){
     //if not found, insert the node at the required location. -- when it's greater
     //  than KEY's left, but less than KEY's right
     TreeNode *ins = new TreeNode(newEntry);
-    if(root == NULL){
+    if(root->getEntry() == NULL){
         cout<<"Tree is empty, setting root to new entry\n";
         root = ins;
         return true;
@@ -80,6 +82,8 @@ bool TreeDB::insert(DBentry* newEntry){
 }
 
 bool TreeDB::insert_in_bst(TreeNode *ins, TreeNode *curr){
+    cout<<"Insert_in_BST: \n";
+   
     if(ins->getEntry()->getName() == curr->getEntry()->getName()){
         cout<<"Error: entry already exists\n";
         cout<<"Returning false from insert("<<ins->getEntry()->getName()<<")\n";
@@ -107,7 +111,7 @@ bool TreeDB::insert_in_bst(TreeNode *ins, TreeNode *curr){
             curr->setRight(ins);
         }
         else{
-            cout<<"\t\t"<<curr->getEntry()->getName()<<"is not a leaf.\n\t\t Traversing left until a leaf.\n";
+            cout<<"\t\t"<<curr->getEntry()->getName()<<"is not a leaf.\n\t\t Traversing right until a leaf.\n";
             insert_in_bst (ins, curr->getRight());
             cout<<"Inserted Node, leaving insert."<<endl;
         }
@@ -204,7 +208,7 @@ bool TreeDB::remove(string name){
     
     // Define an operator< function for the treeNode class? Then, I can just to parent < name => parent->getRight()
     cout<<"\tChecking if the required node is this entry's left or right child...\n";
-    if(parent->getLeft()->getEntry()->getName() == name()){
+    if(parent->getLeft()->getEntry()->getName() == name){
         cout<<"\t\t Left Child \n";
         reqNode = parent->getLeft();
     }
@@ -284,7 +288,7 @@ bool TreeDB::remove(string name){
         max_left->setLeft(left_subtree);                                        //Making max_left the parent of the left subtree's root
         max_left->setRight(right_subtree);                                      //Making max_left the parent of the right subtree's root
         
-        if(parent->getLeft() == reqNode()){                                     //Replacing reqNode with max_left
+        if(parent->getLeft() == reqNode){                                     //Replacing reqNode with max_left
             parent->setLeft(max_left);
         }
         else{
@@ -359,19 +363,29 @@ void TreeDB::countActive () const{                                              
     //Recurse through the tree, and if active == 1, count++
     cout<<"\tIn countAvtive; counting Active nodes...\n";
     TreeNode *curr = root;
-    return count_active(root);
+    int activeCount = 0;
+    cout<<count_active(curr,activeCount)<<endl;
 }
 
-int TreeDB::count_active(TreeNode *curr){                                       //Think it works...
-    int activeCount = 0;
-    cout<<"\t\tIn count_active; Recursively Counting active nodes\n";
+int TreeDB::count_active(TreeNode *curr, int& activeCount) const{                                       //Think it works...
+    
     if(curr == NULL)
         return activeCount;
+    cout<<"\t\tIn count_active, at Node \""<<curr->getEntry()->getName()<<"\";\n"
+            <<"\t\t    current status: "<<curr->getEntry()->getActive()<<endl
+            <<"\t\t    current activeCount: "<<activeCount<<endl;
     if(curr->getEntry()->getActive() == true)
         activeCount++;
     //go left, then go right, then add the two
     //recurses through the left, then reurses through the right, and then adds the two to get the activecount.
-    return (count_active(curr->getLeft()) + count_active(curr->getRight()));
+    cout<<"\t\tChecking Left children, activeCount = "<<activeCount<<endl;;
+    int leftActive = count_active(curr->getLeft(), activeCount);
+    cout<<"\t\tChecking Right children, activeCount = "<<activeCount<<endl;
+    int rightActive = count_active(curr->getRight(), activeCount);
+    cout<<"leftActive = "<<leftActive<<endl;
+    cout<<"rightActive = "<<rightActive<<endl;
+    cout<<"returning ActiveCount = "<<activeCount<<endl;
+    return (activeCount);
     
 }                                       //Think it works
 // Prints the entire tree, in ascending order of key/name
@@ -386,7 +400,7 @@ ostream& operator<< (ostream& out, const TreeDB& rhs){
        // out<<rhs->getRoot()->getLeft(); //Prints the left nodes
         out<<rhs.getRoot()->getLeft();
         out<<rhs.getRoot();
-        out<<rhs->getRoot()->getRight();
+        out<<rhs.getRoot()->getRight();
     }
     return out;
 }
@@ -394,7 +408,7 @@ ostream& operator<< (ostream& out, const TreeDB& rhs){
 // You *may* choose to implement the function below to help print the 
 // tree.  You do not have to implement this function if you do not wish to.
 ostream& operator<< (ostream& out, TreeNode* rhs){                                      //<< overload for TreeNode...basically, we can cout<<currNode in the provios function.
-    cout<<"Printing Noded...\n";
+    cout<<"Printing Noded\n";
     if(rhs == NULL)
         return out; //Don't want to dereference NULL
     //Recurse all the way to the left
@@ -403,7 +417,7 @@ ostream& operator<< (ostream& out, TreeNode* rhs){                              
         out<<rhs->getLeft();
     }
     cout<<"Reached a leaf. Printing it.\n";
-    out<<rhs->printNode();
+    rhs->printNode();
     if(rhs->getRight() != NULL){
         cout<<"\tGoing Right\n";
         out<<rhs->getRight();
@@ -429,10 +443,10 @@ int main(int argc, char** argv) {
             <<"\t - countActive()\n"
             <<"\t - cout<<tree\n"
             <<"--------------------\n";
-    tree->insert(newEntry_default);
+    tree.insert(newEntry_default);
     cout<<"Adding a duplicate name...check for error:\n";
     DBentry *newEntry_default2 = new DBentry();
-    bool insertRoot = tree->insert(newEntry_default2);
+    bool insertRoot = tree.insert(newEntry_default2);
     cout<<"Creating 5 entries using the second DBentry constructor";
     cout<<"Status for these entries: false, true, false, false, true\n";
     DBentry *newEntry3 = new DBentry("A",1,false);
@@ -442,43 +456,43 @@ int main(int argc, char** argv) {
     DBentry *newEntry7 = new DBentry("E",5,true);
     
     cout<<"Because the default entry constructor initializes to a blank, everything should be on the right side\n";
-    bool insertFirst = tree->insert(newEntry3);
-    bool insertSecond = tree->insert(newEntry4);
-    bool insertThird = tree->insert(newEntry5);
-    bool insertFourth = tree->insert(newEntry6);
-    bool insertFifth = tree->insert(newEntry7);
+    bool insertFirst = tree.insert(newEntry3);
+    bool insertSecond = tree.insert(newEntry4);
+    bool insertThird = tree.insert(newEntry5);
+    bool insertFourth = tree.insert(newEntry6);
+    bool insertFifth = tree.insert(newEntry7);
     
     cout<<"Inserted all the nodes. \nCommencing the find test\n";
-    DBentry *findThird = tree->find("C");
+    DBentry *findThird = tree.find("C");
     cout<<"\tShould have found 'C'\n";
     
     cout<<"count-active test: should return 2\n";
-    tree->countActive();
+    tree.countActive();
     
     cout<<"Find test completed. Remove tests commencing...\n";
     cout<<"With this structure, can only test remove of a leaf, or with one subtree\n";
     
     cout<<"Leaf remove first...\n";
-    bool successfulLeafRemove = tree->remove("E");
+    bool successfulLeafRemove = tree.remove("E");
     cout<<"Successfuly removed leaf?: "<<successfulLeafRemove<<endl;
      cout<<"Printing out tree to make sure...should be missing \"E\"\n"
         <<tree<<endl;
     cout<<"One-subtree remove:\n\tRemoving B...\n";
-    bool successfulOneRemove = tree->remove("B");
+    bool successfulOneRemove = tree.remove("B");
     cout<<"Successful one-subtree remove?: "<<successfulOneRemove<<endl;
     cout<<"Printing out tree to make sure...should be missing \"E\" and \"B\"\n"
         <<tree<<endl;
     cout<<"Removing non-existant node...\n";
-    bool successfulImaginaryRemove = remove("Z");
+    bool successfulImaginaryRemove = tree.remove("Z");
     cout<<"successful imaginary remove?: "<<successfulImaginaryRemove<<endl;
     
     cout<<"Remove tests complete.\n"
             <<"Commencing PrintProbes test...\n";
-    tree->printProbes();
+    tree.printProbes();
     
     cout<<"PrintProbes test completed.\n"
             <<"Commencing active-count test...should return 0\n";
-    tree->countActive();
+    tree.countActive();
     
     cout<<"count-active test completed.\n"
             <<"Commencing print test...\n";
@@ -487,7 +501,7 @@ int main(int argc, char** argv) {
     cout<<"Print test completed.\n";
     cout<<"Commencing tree deletion\n";
     
-    tree->clear();
+    tree.clear();
     cout<<"printing tree to make sure it's empty (should be blank):\n";
     cout<<tree;
     
