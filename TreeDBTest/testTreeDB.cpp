@@ -37,7 +37,7 @@ TreeDB::~TreeDB(){
 }
 
 TreeNode *TreeDB::getRoot() const{
-    cout<<"Entered getRoot(). Returning root = "<<root<<endl;
+    //cout<<"Entered getRoot(). Returning root = "<<root<<endl;
     return root;
 }
 
@@ -141,6 +141,7 @@ DBentry* TreeDB::find(string name){
 //      Returns NULL otherwise, at which point, we'd recurse 
 DBentry *TreeDB::find_in_bst(TreeNode *curr, string name){
     cout<<"\t\tEntered find_in_bst at \""<<curr->getEntry()->getName()<<"\", "<<name<<endl;
+    
     DBentry *tmp = NULL;
     probesCount++;                              //want to increment every time we reach a new node
     cout<<"\t\tProbesCount: \t\t"<<probesCount<<endl;
@@ -153,7 +154,7 @@ DBentry *TreeDB::find_in_bst(TreeNode *curr, string name){
         cout<<"\t\tFound a match. Returning node with entry name \""<<name<<"\"\n";
         return curr->getEntry();
     }
-    else if (curr->getEntry()->getName() > name){
+     if (curr->getEntry()->getName() > name && curr->getLeft()){
         //Need to go left
         cout<<"\t\tHaven't yet found a match, looking left\n";
         tmp = find_in_bst(curr->getLeft(), name);
@@ -163,21 +164,19 @@ DBentry *TreeDB::find_in_bst(TreeNode *curr, string name){
             return tmp;
         }
     }
-    if (curr->getEntry()->getName() < name){
+    if (curr->getEntry()->getName() < name && curr->getRight()){
         //Need to go right
         cout<<"\t\tHaven't yet found a match, looking right\n";
+        cout<<"\t\ti.e. go to node";
+        cout<<curr->getRight()->getEntry()->getName()<<endl;
         tmp = find_in_bst(curr->getRight(), name);
         if(tmp != NULL){
             cout<<"\t\t\tFound!\n";
             return tmp;
         }
     }
-    
-    //If we got here, a match hasn't been found.
-    //If we're in left and we return NULL, => not found in left branch
-    //If we're in right and we return NULL, => not found in left or right...=>doesn't exist.
-    //return NULL;
-    
+    cout<<"Error: entry not found\n";
+    return NULL;
 }
 
 // deletes the entry with the specified name (key)  from the database.
@@ -188,149 +187,254 @@ DBentry *TreeDB::find_in_bst(TreeNode *curr, string name){
 // maximum node in the left subtree when the deleted node has two children)
 // you will not match exercise's output.
 bool TreeDB::remove(string name){
-    if(root == NULL){
+    cout<<"Removing node "<<name<<endl;
+    if(root == NULL){                   //Empty tree
         cout<<"Error: entry does not exist\n";
         return false;
     }
     DBentry *toDelete = find_in_bst(root, name);
-    if (toDelete == NULL){
+    if (toDelete == NULL){              //Entry not found
         cout<<"Error: entry does not exist\n";
         return false;
     }
-    //The entry exists at the current DBentry
-    //Find the node connected to the DBentry, and delete it in the correct manner.
-    TreeNode *parent = getParent(toDelete);
-    TreeNode *reqNode = NULL;
-    TreeNode *temp = parent->getLeft();
-   // cout<<"Parent->getLeft() is "<<parent->getLeft()<<endl;
-    // ///////////////////////////////////////////////////////////////////////////////////////////////////
-    // Checking if the node to be deleted is on the left or the right
-    // ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+    bool successfulDelete = false;
+
+    //Case : deleting root
+    if(root->getEntry()->getName() == name){
+        cout<<"Deleting root\n";
+        successfulDelete = removeRoot(name);
+    }
+   TreeNode *nodeToDelete = find_node_in_bst(root,name);
+   TreeNode *parent = getParent(root, name);
+
     if(parent != NULL && parent->getEntry() != NULL)
         cout<<"Parent's entry (should be D for the single leaf, A for the one-subtree): "<<parent->getEntry()->getName()<<endl;
-    // Define an operator< function for the treeNode class? Then, I can just to parent < name => parent->getRight()
-    cout<<"\tChecking if the required node is this entry's left or right child...\n";
-    if(parent->getLeft()!= NULL && parent->getLeft()->getEntry()->getName() == name){
-        cout<<"\t\t Left Child \n";
-        reqNode = parent->getLeft();
-    }
-    else if(parent->getRight() !=NULL && parent->getRight()->getEntry()->getName() == name){
-        cout<<"\t\t Right Child.\n";
-        reqNode = parent->getRight();
-    }
     
-    //  ///////////////////////////////////////////////////////////////////////////////////////////////////
     // Counting the number of children to parent                                                        //
-    // ///////////////////////////////////////////////////////////////////////////////////////////////////
     int childCount = 0;
     if(parent->getLeft() != NULL)
         childCount += countChildren(parent->getLeft());
     if(parent->getRight() != NULL)
         childCount += countChildren(parent->getRight());
     
-    
-    if(reqNode == NULL){        //This will never happen...we know that the entry exists.
-        cout<<"Error: entry does not exist ____ 1\n;";
-        return false;
-    }
-    
-   // bool twoChildren = (reqNode->getLeft() != NULL) && (reqNode->getRight() != NULL);       //Returns 1 iff neither is NULL
-        //Count the number of children for this node
     //Case 1: Deleting a leaf
     if(childCount == 0){
         cout<<"Deleting a leaf\n";
-        if(reqNode == parent->getLeft()){
-            delete parent->getLeft();
-            parent->setLeft(NULL);
-            cout<<"Deleted Left leaf\n";
-        }
-        else if(reqNode == parent->getRight()){
-            delete parent->getRight();
-            parent->setRight(NULL);
-            cout<<"deleted right leaf\n";
-        }
-        probesCount--;
-        return true;
+        successfulDelete = removeLeaf(parent,name);
     }
         
     //Case 2: one child subtree
     if(childCount == 1){
         cout<<"Node to be removed has exactly one subtree\n";
-        if(reqNode->getLeft()){
-            cout<<"\tThe left child is the subtree\n";
-            TreeNode *tmp = reqNode;
-            reqNode->setLeft(NULL);
-            //delete reqNode;
-            parent->setLeft(tmp);
-            cout<<"Moved the left subtree up to the deleted node's location\n";
-        }
-        else if(reqNode->getRight()){
-            cout<<"\t The right child is the subtree\n";
-            TreeNode *tmp = reqNode;
-            reqNode->setRight(NULL);
-            //delete reqNode;     //Needed? It wasn't allocated with new...
-            parent->setRight(tmp);
-            cout<<"Moved the right subtree up to the deleted node's location\n";
-        }
-        cout<<"Success\n";
-        probesCount--;
-        return true;
+        successfulDelete = removeWithOneSubtree(parent,name);
     }
     
     //Case 3: Both children are subtrees
     if(childCount == 2){
         cout<<"Node to be removed has two subtrees :'(\n";
-        TreeNode *max_left = getRightMost(reqNode->getLeft());      //Finds the maximum node of the left child
+        successfulDelete = removeWithTwoSubtrees(parent,name);
+    }
+    return successfulDelete;
+}
+
+TreeNode *TreeDB::find_node_in_bst (TreeNode *node, string name) {
+    cout<<"finding a node in the bst\n";
+   // cout<<"\tCurrently at Node \""<<node->getEntry()->getName()<<"\"\n";
+    if (node == NULL) 
+      return (NULL);    // Basis.  Not found.
+
+   if (node->getEntry()->getName() == name)
+      return (node);     // Basis.  Found.
+  
+   if (name < node->getEntry()->getName())
+      return ( find_node_in_bst (node->getLeft(), name) );
+   else 
+      return ( find_node_in_bst (node->getRight(), name) );
+}
+
+
+bool TreeDB::removeRoot(string name){
+    if(root == NULL){
+        cout<<"\tDeleting an empty tree\n";
+        return false;
+    }
+    cout<<"Deleting root...\n";
+    int numChildren = countChildren(root);
+    cout<<"Root has "<<numChildren<<" child(ren)\n";
+    
+    //Case 1: No children - delete root, set root to NULL
+    if(numChildren == 0){
+        cout<<"\tRoot has no children.\n";
+        delete root;
+        root = NULL;
+        probesCount--;
+        return true;
+    }
+    else if(numChildren == 1){
+        cout<<"\tRoot has one child.\n";
+        if(root->getLeft()){
+            cout<<"\t\tChild is on Root's left\n";
+            TreeNode *tmp = root->getLeft();
+            delete root;
+            root = tmp;
+            probesCount--;
+            return true;
+        }
+        else{
+            cout<<"\t\tChild is on Root's right\n";
+            TreeNode *tmp = root->getRight();
+            delete root;
+            root = tmp;
+            probesCount--;
+            return true;
+        }
+    }
+    else if(numChildren == 2){
+        cout<<"\tRoot has 2 children.\n";
+        TreeNode *max_left = getRightMost(root->getLeft());      //Finds the maximum node of the left child
         TreeNode *max_left_parent = NULL;
         if(countChildren(max_left)){
-            //If the maximum node has a left subtree
+            //If the maximum left node has a left subtree
             //find the parent to the maximum node
-            max_left_parent = getParent(max_left->getEntry());
+            max_left_parent = getParent(max_left, name);
             //Set max_left's left subtree equal to max_left_parent's right pointer
             max_left_parent->setRight(max_left->getLeft());
         }
-        TreeNode *left_subtree = reqNode->getLeft();                            //reqNode's left subtree
-        TreeNode *right_subtree = reqNode->getRight();                          //reqNode's right subtree
+        TreeNode *left_subtree = root->getLeft();                            //reqNode's left subtree
+        TreeNode *right_subtree = root->getRight();                          //reqNode's right subtree
         max_left->setLeft(left_subtree);                                        //Making max_left the parent of the left subtree's root
         max_left->setRight(right_subtree);                                      //Making max_left the parent of the right subtree's root
-        
-        if(parent->getLeft() == reqNode){                                     //Replacing reqNode with max_left
-            parent->setLeft(max_left);
-        }
-        else{
-            parent->setRight(max_left);
-        }
-        
-        reqNode->setLeft(NULL);
-        reqNode->setRight(NULL);
+
+        delete root;
+        root = max_left;
         probesCount--;
         return true;
     }
 }
 
-TreeNode *TreeDB::getParent(DBentry* _entry){
-    if(root == NULL){    //Empty tree
-        cout<<"getParent for an empty tree. Returning NULL\n";
-        return NULL;
+bool TreeDB::removeLeaf(TreeNode *parent, string name){
+    if(parent == NULL)
+        return false;
+    
+    if(parent->getLeft() != NULL && parent->getLeft()->getEntry()->getName() == name){
+        delete parent->getLeft();
+        parent->setLeft(NULL);
+        cout<<"Deleted Left leaf\n";
     }
-    cout<<"Finding parent\n";
-    TreeNode *reqNode = root;
-    while(reqNode->getLeft()->getEntry() != _entry && reqNode->getRight()->getEntry() != _entry){
-        cout<<"Searching tree for the node attached to the required entry...\n";
-        if(reqNode->getEntry()->getName() > _entry->getName()){
-            cout<<"\tGoing left\n";
-            reqNode = reqNode->getLeft();
-        }
-        else if(reqNode->getEntry()->getName() < _entry->getName()){
-            cout<<"\tGoing right\n";
-            reqNode = reqNode->getRight();
-        }
+    else if(parent->getRight() != NULL && parent->getRight()->getEntry()->getName() == name){
+        delete parent->getRight();
+        parent->setRight(NULL);
+        cout<<"deleted right leaf\n";
     }
-    cout<<"Found Node before the one attached to entry "<<_entry->getName()<<endl;
-    cout<<"\ti.e. parent = "<<reqNode->getEntry()->getName()<<endl;
-    cout<<"Returning this node. Check if it's the left or right child that needs to be deleted\n";
+    probesCount--;
+    return true;
+}
 
-    return reqNode;
+bool TreeDB::removeWithOneSubtree(TreeNode *parent, string name){
+    TreeNode *reqNode = NULL;
+    if(parent == NULL)
+        return false;
+    cout<<"Parent = "<<parent->getEntry()->getName()<<endl;
+    //Find if the node to be deleted is the left child or the right child
+    if(parent->getLeft() != NULL && parent->getLeft()->getEntry()->getName() == name){
+        reqNode = parent->getLeft();
+    }
+    else if(parent->getRight() != NULL && parent->getRight()->getEntry()->getName() == name){
+        reqNode = parent->getRight();
+    }
+    TreeNode *tmp;
+    if(reqNode->getLeft()){
+            cout<<"\tThe left child is the subtree\n";
+            tmp = reqNode;
+            reqNode->setLeft(NULL);
+            //delete reqNode;
+            parent->setLeft(tmp);
+            cout<<"Moved the left subtree up to the deleted node's location\n";
+    }
+    else if(reqNode->getRight()){
+        cout<<"\t The right child is the subtree\n";
+        tmp = reqNode;
+        cout<<"tmp->right = "<<tmp->getRight()->getEntry()->getName()<<endl;
+        //reqNode->setRight(NULL);
+        //delete reqNode;     //Needed? It wasn't allocated with new...
+        parent->setRight(tmp->getRight());
+        cout<<"Moved the right subtree up to the deleted node's location\n";
+    }
+    cout<<"Parent = "<<parent->getEntry()->getName()<<endl;
+    cout<<"Right Child = "<<parent->getRight()->getEntry()->getName()<<endl;
+    cout<<"Success\n";
+    probesCount--;
+    return true;
+}
+
+bool TreeDB::removeWithTwoSubtrees(TreeNode *parent, string name){
+    TreeNode *reqNode = NULL;
+    if(parent == NULL){
+        return false;
+    }
+    if(parent->getLeft()->getEntry()->getName() == name){
+        reqNode = parent->getLeft();
+    }
+    else{
+        reqNode = parent->getRight();
+    }
+    TreeNode *max_left = getRightMost(reqNode->getLeft());      //Finds the maximum node of the left child
+    TreeNode *max_left_parent = NULL;
+    if(countChildren(max_left)){
+        //If the maximum node has a left subtree
+        //find the parent to the maximum node
+        max_left_parent = getParent(max_left, name);  //was: max_left()->getEntry();
+        //Set max_left's left subtree equal to max_left_parent's right pointer
+        max_left_parent->setRight(max_left->getLeft());
+    }
+    TreeNode *left_subtree = reqNode->getLeft();                            //reqNode's left subtree
+    TreeNode *right_subtree = reqNode->getRight();                          //reqNode's right subtree
+    max_left->setLeft(left_subtree);                                        //Making max_left the parent of the left subtree's root
+    max_left->setRight(right_subtree);                                      //Making max_left the parent of the right subtree's root
+
+    if(parent->getLeft() == reqNode){                                     //Replacing reqNode with max_left
+        parent->setLeft(max_left);
+    }
+    else{
+        parent->setRight(max_left);
+    }
+
+    reqNode->setLeft(NULL);
+    reqNode->setRight(NULL);
+    probesCount--;
+    return true;
+}
+
+TreeNode *TreeDB::getParent(TreeNode *curr, string name){
+    cout<<"Finding parent of node with name "<<name<<endl;
+   if (curr == NULL) 
+	return (NULL);    // Basis.  Not found.
+    if(root == NULL)
+        return NULL;
+    cout<<"curr = "<<curr->getEntry()->getName()<<endl;
+    if(curr->getLeft() != NULL){
+        cout<<"Curr has a left child\n";
+        if(curr->getLeft()->getEntry()->getName() == name){
+            return curr;        //Basis. Found.
+        }
+    }
+    
+    if(curr->getRight() != NULL){
+        cout<<"Curr has a right child\n";
+        if(curr->getRight()->getEntry()->getName() == name)
+            return (curr);     // Basis.  Found.
+   }
+    
+    
+   if (name < curr->getEntry()->getName() && curr->getLeft() != NULL){
+       cout<<"\tGoing left\n";
+      return ( getParent (curr->getLeft(), name) );
+   }
+   else if(name > curr->getEntry()->getName() && curr->getRight() != NULL){
+       cout<<"\tGoing right\n";
+      return ( getParent (curr->getRight(), name) );
+   }
 }
 
 int TreeDB::countChildren(TreeNode* curr){
@@ -407,14 +511,18 @@ ostream& operator<< (ostream& out, const TreeDB& rhs){
     //For each node, left, printNode, and then go right -- we want it in ascending order.
     cout<<"Printing the Tree...\n";
     //if(null), return
-    if(rhs.getRoot() == NULL)
+    if(rhs.getRoot() == NULL){
+        cout<<"Printing an empty tree\n";
         return out;
+    }
+        
     //else, print left, then print rhs, then  print right.
     else{
+        cout<<"Tree is not empty\n";
        // out<<rhs->getRoot()->getLeft(); //Prints the left nodes
-        out<<rhs.getRoot()->getLeft();
+        //out<<rhs.getRoot()->getLeft();
         out<<rhs.getRoot();
-        out<<rhs.getRoot()->getRight();
+        //out<<rhs.getRoot()->getRight();
     }
     return out;
 }
@@ -427,14 +535,16 @@ ostream& operator<< (ostream& out, TreeNode* rhs){                              
         return out; //Don't want to dereference NULL
     //Recurse all the way to the left
     if(rhs->getLeft() != NULL){
-        cout<<"\tGoing Left\n";
-        out<<rhs->getLeft();
+        cout<<"\tGoing Left from "<<rhs->getEntry()<<"\n";
+        out<<rhs->getLeft()->getEntry()<<endl;
+        return out;
     }
-    //cout<<"Printing \""<<rhs->getEntry()->getName()<<"\"\n";
+    cout<<"Printing rhs: \n";
     rhs->printNode();
     if(rhs->getRight() != NULL){
-        cout<<"\tGoing Right\n";
-        out<<rhs->getRight();
+        cout<<"\tGoing Right from "<<rhs->getEntry()<<"\n";
+        out<<rhs->getRight()->getEntry()<<endl;
+        return out;
     }
     return out;
 }   
@@ -445,8 +555,9 @@ int main(int argc, char** argv) {
     cout<<"Initial print test:\n\t";
     cout<<tree<<endl;
     
-    cout<<"Creating a new entry with default constructor, to insert\n";
-    DBentry *newEntry_default = new DBentry();
+//    cout<<"Creating a new entry with default constructor, to insert\n";
+//    DBentry *newEntry_default = new DBentry();
+    DBentry *newEntry1 = new DBentry("Root",0,false);
     cout<<"Commencing tests with the default entry contstuctor inseerted first...\n";
     cout<<"Need to test all public functions, i.e.:\n"
             <<"\t - insert (DBentry *newEntry_default)\n"
@@ -457,10 +568,10 @@ int main(int argc, char** argv) {
             <<"\t - countActive()\n"
             <<"\t - cout<<tree\n"
             <<"--------------------\n";
-    tree.insert(newEntry_default);
+    tree.insert(newEntry1);
     cout<<"Adding a duplicate name...check for error:\n";
-    DBentry *newEntry_default2 = new DBentry();
-    bool insertRoot = tree.insert(newEntry_default2);
+    DBentry *newEntry2 = new DBentry("Root",15,true);
+    bool insertRoot = tree.insert(newEntry2);
     cout<<"Creating 5 entries using the second DBentry constructor";
     cout<<"Status for these entries: false, true, false, false, true\n";
     DBentry *newEntry3 = new DBentry("A",1,false);
@@ -494,8 +605,13 @@ int main(int argc, char** argv) {
     cout<<"One-subtree remove:\n\tRemoving B...\n";
     bool successfulOneRemove = tree.remove("B");
     cout<<"Successful one-subtree remove?: "<<successfulOneRemove<<endl;
-    cout<<"Printing out tree to make sure...should be missing \"E\" and \"B\"\n"
-        <<tree<<endl;
+    cout<<"\nWas C deleted instead of B?: ";
+    
+    DBentry *CwasDeleted = tree.find("C");
+    if(CwasDeleted == NULL)
+        cout<<"C was deleted :'(\n";
+    //    cout<<"Printing out tree to make sure...should be missing \"E\" and \"B\"\n"
+//        <<tree<<endl;
     cout<<"Removing non-existant node...\n";
     bool successfulImaginaryRemove = tree.remove("Z");
     cout<<"successful imaginary remove?: "<<successfulImaginaryRemove<<endl;
@@ -522,16 +638,16 @@ int main(int argc, char** argv) {
     cout<<"Tree deletion complete.\n";
     cout<<"ALL TESTS COMPLETE!\n"
             <<"Deleting dynamic data...\n";
-    delete newEntry_default;
-    delete newEntry_default2;
+    delete newEntry1;
+    delete newEntry2;
     delete newEntry3;
     delete newEntry4;
     delete newEntry5;
     delete newEntry6;
     delete newEntry7;
     
-    newEntry_default = NULL;
-    newEntry_default2 = NULL;
+    newEntry1 = NULL;
+    newEntry2 = NULL;
     newEntry3 = NULL;
     newEntry4 = NULL;
     newEntry5 = NULL;
