@@ -35,8 +35,8 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/Main.o \
-	${OBJECTDIR}/DBentry.o \
-	${OBJECTDIR}/TreeNode.o
+	${OBJECTDIR}/TreeNode_oldNew.o \
+	${OBJECTDIR}/DBentry_oldNew.o
 
 
 # C Compiler Flags
@@ -68,15 +68,15 @@ ${OBJECTDIR}/Main.o: Main.cpp
 	${RM} $@.d
 	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/Main.o Main.cpp
 
-${OBJECTDIR}/DBentry.o: DBentry.cpp 
+${OBJECTDIR}/TreeNode_oldNew.o: TreeNode_oldNew.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/DBentry.o DBentry.cpp
+	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/TreeNode_oldNew.o TreeNode_oldNew.cpp
 
-${OBJECTDIR}/TreeNode.o: TreeNode.cpp 
+${OBJECTDIR}/DBentry_oldNew.o: DBentry_oldNew.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/TreeNode.o TreeNode.cpp
+	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/DBentry_oldNew.o DBentry_oldNew.cpp
 
 # Subprojects
 .build-subprojects:

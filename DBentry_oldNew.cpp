@@ -10,7 +10,6 @@ using namespace std;
 
 DBentry::DBentry(){
     //name doesn't need to be initialized
-    name = "\0";
     IPaddress = 0;
     active = false;
 }

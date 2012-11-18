@@ -10,6 +10,9 @@ private:
     TreeNode* right;
 
 public:
+    //Default constructor
+    TreeNode ();
+    
     // A useful constructor
     TreeNode(DBentry* _entryPtr);
 

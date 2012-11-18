@@ -80,6 +80,7 @@ ostream& operator<< (ostream& out, const DBentry& rhs){
     out<<rhs.getName()<<" : "<<rhs.getIPaddress()<<" : "<<rhs.getActive()<<endl;
     return out;
 }
+/*
 int main(int argc, char** argv) {
     DBentry testDB1;          //Uses the default constructor. name = "", IPaddress = 0, active = false;
     cout<<"printing testDB1 - default constructor: \n\tExpected: \" : 0 : 0\"\n\tHave:    \""<<testDB1<<"\"\n";
@@ -101,4 +102,4 @@ int main(int argc, char** argv) {
         <<"ALL TESTS COMPLETED!\n";
     return 0;
 }
-
+*/

@@ -34,8 +34,8 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/_ext/1472/DBentry.o \
-	${OBJECTDIR}/testTreeNode.o
+	${OBJECTDIR}/testTreeNode.o \
+	${OBJECTDIR}/_ext/1472/DBentry_oldNew.o
 
 
 # C Compiler Flags
@@ -62,15 +62,15 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/treenodetest.exe: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/treenodetest ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-${OBJECTDIR}/_ext/1472/DBentry.o: ../DBentry.cpp 
-	${MKDIR} -p ${OBJECTDIR}/_ext/1472
-	${RM} $@.d
-	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/1472/DBentry.o ../DBentry.cpp
-
 ${OBJECTDIR}/testTreeNode.o: testTreeNode.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/testTreeNode.o testTreeNode.cpp
+
+${OBJECTDIR}/_ext/1472/DBentry_oldNew.o: ../DBentry_oldNew.cpp 
+	${MKDIR} -p ${OBJECTDIR}/_ext/1472
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/1472/DBentry_oldNew.o ../DBentry_oldNew.cpp
 
 # Subprojects
 .build-subprojects:

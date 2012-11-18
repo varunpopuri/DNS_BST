@@ -8,12 +8,6 @@
  */
 
 // A useful constructor
-
-TreeNode::TreeNode(){
-    entryPtr = NULL;
-    left = NULL;
-    right = NULL;
-}
 TreeNode::TreeNode(DBentry* _entryPtr){
     entryPtr = _entryPtr;                       //entryPtr is the pointer to the DBentry of the current TreeNode
     left = NULL;
@@ -55,5 +49,5 @@ DBentry*  TreeNode::getEntry() const{
 
 void TreeNode::printNode(){
     // Calls the operator<< for DBentry
-    cout<<getEntry();
+    cout<<this->getEntry();
 }
