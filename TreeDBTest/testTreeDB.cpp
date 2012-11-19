@@ -531,21 +531,29 @@ ostream& operator<< (ostream& out, const TreeDB& rhs){
 // tree.  You do not have to implement this function if you do not wish to.
 ostream& operator<< (ostream& out, TreeNode* rhs){                                      //<< overload for TreeNode...basically, we can cout<<currNode in the provios function.
     cout<<"\nPrinting Node\n";
-    if(rhs == NULL)
+    if(rhs == NULL){
+        cout<<"RHS is NULL\n";
         return out; //Don't want to dereference NULL
+    }
+    cout<<"Checking Left. ";
     //Recurse all the way to the left
     if(rhs->getLeft() != NULL){
-        cout<<"\tGoing Left from "<<rhs->getEntry()<<"\n";
-        out<<rhs->getLeft()->getEntry()<<endl;
+        cout<<"\tGoing Left from "<<rhs->getEntry()->getName()<<"\n";
+        out<<rhs->getLeft()<<endl;
         return out;
+    }
+    if(rhs->getLeft() == NULL){
+        cout<<"Left is NULL. ";
     }
     cout<<"Printing rhs: \n";
     rhs->printNode();
     if(rhs->getRight() != NULL){
-        cout<<"\tGoing Right from "<<rhs->getEntry()<<"\n";
-        out<<rhs->getRight()->getEntry()<<endl;
-        return out;
+        cout<<"\tGoing right from "<<rhs->getEntry()->getName()<<"\n";
+        //cout<<"\tGoing Right from "<<rhs->getEntry()<<"\n";
+        out<<rhs->getRight()<<endl;
+        //return out;
     }
+    
     return out;
 }   
 
@@ -612,6 +620,12 @@ int main(int argc, char** argv) {
         cout<<"C was deleted :'(\n";
     //    cout<<"Printing out tree to make sure...should be missing \"E\" and \"B\"\n"
 //        <<tree<<endl;
+    DBentry *DisLost = tree.find("D");
+    if(DisLost == NULL){
+        cout<<"D was lost :'(\n";
+        return 0;
+    }
+        
     cout<<"Removing non-existant node...\n";
     bool successfulImaginaryRemove = tree.remove("Z");
     cout<<"successful imaginary remove?: "<<successfulImaginaryRemove<<endl;
@@ -626,6 +640,8 @@ int main(int argc, char** argv) {
     
     cout<<"count-active test completed.\n"
             <<"Commencing print test...\n";
+    cout<<"Setting D to active, to see if it's reachable\n";
+    newEntry6->setActive(true);
     cout<<tree<<endl;
     
     cout<<"Print test completed.\n";
