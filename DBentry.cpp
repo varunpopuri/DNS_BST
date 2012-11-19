@@ -57,6 +57,13 @@ bool DBentry::getActive() const{
 // name : IPaddress : active  followed by newline
 // active is printed as a string (active or inactive)
 ostream& operator<< (ostream& out, const DBentry& rhs){
+    cout<<"Printing Entry \""<<rhs.getName()<<"\"\n";
     out<<rhs.getName()<<" : "<<rhs.getIPaddress()<<" : "<<rhs.getActive()<<endl;
     return out;
+}
+
+ostream& operator<< (ostream& out, DBentry *rhs){
+ cout<<"Printing Entry \""<<rhs->getName()<<"\"\n";
+    out<<rhs->getName()<<" : "<<rhs->getIPaddress()<<" : "<<rhs->getActive()<<endl;
+    return out;   
 }

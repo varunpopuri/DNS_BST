@@ -40,6 +40,7 @@ public:
         // name : IPaddress : active  followed by newline
         // active is printed as a string (active or inactive)
         friend ostream& operator<< (ostream& out, const DBentry& rhs);
+        friend ostream& operator<< (ostream& out, DBentry *rhs);
 };
 
 #endif 
