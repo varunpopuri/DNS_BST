@@ -42,23 +42,34 @@ TreeNode *TreeDB::getRoot() const{
 }
 
 void TreeDB::deleteTree(TreeNode* currNode){
-    cout<<"Entered delteteTree("<<currNode->getEntry()->getName()<<")\n\t";
+   
     if(currNode == NULL){        //The tree is empty, or we've gone past a leaf
         cout<<"\tTree is empty, or gone past a leaf. Returning (no value).\n";
         return;
     }
     else{
-        cout    <<"\tThe node with entry \""<<currNode->getEntry()->getName()<<"\" has children.\n"
+         cout<<"Entered delteteTree("<<currNode->getEntry()->getName()<<")\n\t";
+     /*   cout    <<"\tThe node with entry \""<<currNode->getEntry()->getName()<<"\" has children.\n"
                 <<"\t\tDeleting these children\n";
         //The current node has children
-        deleteTree(currNode->getLeft());
-        deleteTree(currNode->getRight());
+        cout<<"Going Left from "<<currNode->getEntry()->getName()<<endl;
+        //deleteTree(currNode->getLeft());
+        remove(currNode->getLeft()->getEntry()->getName());
+        currNode->setLeft(NULL);
+        cout<<"Going right from "<<currNode->getEntry()->getName()<<endl;
+       // deleteTree(currNode->getRight());
+        remove(currNode->getRight()->getEntry()->getName());
+        currNode->setLeft(NULL);
     }
     cout<<"\tDeleting \""<<currNode->getEntry()->getName()<<"\"\n";
-    delete currNode;
-    
+    //delete currNode;
+    remove(currNode->getEntry()->getName());
+    cout<<"Root is now: "<<root->getEntry()->getName()<<endl;
+    //currNode = NULL;*/
+         remove(root->getEntry()->getName());
+         deleteTree(root);
+        }
 }
-
 // inserts the entry pointed to by newEntry into the database. 
 // If an entry with the same key as newEntry's exists 
 // in the database, it returns false. Otherwise, it returns true.
@@ -75,10 +86,10 @@ bool TreeDB::insert(DBentry* newEntry){
         return true;
     }
     
-    insert_in_bst(ins,root);
+    bool inserted = insert_in_bst(ins,root);
     
     cout<<"Success\n";
-    return true;        //The node wasn't found, so we inserted it
+    return inserted;        //The node wasn't found, so we inserted it
 }
 
 bool TreeDB::insert_in_bst(TreeNode *ins, TreeNode *curr){
@@ -92,19 +103,24 @@ bool TreeDB::insert_in_bst(TreeNode *ins, TreeNode *curr){
     
     cout<<ins->getEntry()->getName()<<" != "<<curr->getEntry()->getName()<<endl;
     cout<<"Traversing Tree...\n";
+    cout<<" - curr's Name: \""<<curr->getEntry()->getName()<<"\"\n";
+    cout<<" - inserted's name: \""<<ins->getEntry()->getName()<<"\"\n";
+    cout<<"\t - is inserted < curr?: "<<(ins->getEntry()->getName() < curr->getEntry()->getName())<<endl;
+    cout<<"\t - is inserted > curr?: "<<(ins->getEntry()->getName() > curr->getEntry()->getName())<<endl;
     if(ins->getEntry()->getName() < curr->getEntry()->getName()){  //Need to go left
         cout<<"\tGoing left\n";
         if(curr->getLeft() == NULL){
-            cout<<"\t\t"<<curr->getEntry()->getName()<<"is a leaf.\n\t\t  Creating a new node on the left, with entry "<<ins->getEntry()->getName();
+            cout<<"\t\t"<<curr->getEntry()->getName()<<" is a leaf.\n\t\t  Creating a new node on the left, with entry "<<ins->getEntry()->getName();
             curr->setLeft(ins);
+            cout<<"Inserted Node on left, leaving insert."<<endl;
         }
         else{
-            cout<<"\t\t"<<curr->getEntry()->getName()<<"is not a leaf.\n\t\t Traversing left until a leaf.\n";
+            cout<<"\t\t"<<curr->getEntry()->getName()<<" is not a leaf.\n\t\t Traversing left until a leaf.\n";
             insert_in_bst(ins,curr->getLeft());
-            cout<<"Inserted Node, leaving insert."<<endl;
+            cout<<"Inserted Node on right, leaving insert."<<endl;
         }
     }
-    else{  //Need to go left  //Could just make this an else
+    else{  //Need to go right  //Could just make this an else
         cout<<"\tGoing right\n";
         if(curr->getRight() == NULL){
             cout<<"\t\t"<<curr->getEntry()->getName()<<"is a leaf.\n\t\t  Creating a new node on the right, with entry = "<<ins->getEntry()->getName();
@@ -204,6 +220,8 @@ bool TreeDB::remove(string name){
     if(root->getEntry()->getName() == name){
         cout<<"Deleting root\n";
         successfulDelete = removeRoot(name);
+        cout<<"Successful root delete: "<<successfulDelete<<endl;
+        return successfulDelete;
     }
    TreeNode *nodeToDelete = find_node_in_bst(root,name);
    TreeNode *parent = getParent(root, name);
@@ -261,6 +279,7 @@ bool TreeDB::removeRoot(string name){
     }
     cout<<"Deleting root...\n";
     int numChildren = countChildren(root);
+    cout<<"Counted children of root. ";
     cout<<"Root has "<<numChildren<<" child(ren)\n";
     
     //Case 1: No children - delete root, set root to NULL
@@ -269,6 +288,7 @@ bool TreeDB::removeRoot(string name){
         delete root;
         root = NULL;
         probesCount--;
+        cout<<"DELETED ROOT! \n";
         return true;
     }
     else if(numChildren == 1){
@@ -279,6 +299,7 @@ bool TreeDB::removeRoot(string name){
             delete root;
             root = tmp;
             probesCount--;
+            cout<<"DELETED ROOT!\n";
             return true;
         }
         else{
@@ -287,6 +308,7 @@ bool TreeDB::removeRoot(string name){
             delete root;
             root = tmp;
             probesCount--;
+            cout<<"DELETED ROOT!\n";
             return true;
         }
     }
@@ -309,6 +331,7 @@ bool TreeDB::removeRoot(string name){
         delete root;
         root = max_left;
         probesCount--;
+        cout<<"DELETED ROOT!\n";
         return true;
     }
 }
@@ -362,7 +385,7 @@ bool TreeDB::removeWithOneSubtree(TreeNode *parent, string name){
         cout<<"Moved the right subtree up to the deleted node's location\n";
     }
     cout<<"Parent = "<<parent->getEntry()->getName()<<endl;
-    cout<<"Right Child = "<<parent->getRight()->getEntry()->getName()<<endl;
+    cout<<"Right Child (of parent) = "<<parent->getRight()->getEntry()->getName()<<endl;
     cout<<"Success\n";
     probesCount--;
     return true;
@@ -414,14 +437,14 @@ TreeNode *TreeDB::getParent(TreeNode *curr, string name){
         return NULL;
     cout<<"curr = "<<curr->getEntry()->getName()<<endl;
     if(curr->getLeft() != NULL){
-        cout<<"Curr has a left child\n";
+        cout<<"Curr has a left child with name "<<curr->getLeft()->getEntry()->getName()<<endl;
         if(curr->getLeft()->getEntry()->getName() == name){
             return curr;        //Basis. Found.
         }
     }
     
     if(curr->getRight() != NULL){
-        cout<<"Curr has a right child\n";
+        cout<<"Curr has a right child with name "<<curr->getRight()->getEntry()->getName()<<endl;
         if(curr->getRight()->getEntry()->getName() == name)
             return (curr);     // Basis.  Found.
    }
@@ -443,13 +466,13 @@ int TreeDB::countChildren(TreeNode* curr){
         cout<<"counting children for NULL!! Returning 0\n";
         return count;
     }
-    cout<<"Counting the number of children for Node with entry \""<<curr->getEntry()->getName()<<"\"\n";
+    //cout<<"Counting the number of children for Node with entry \""<<curr->getEntry()->getName()<<"\"\n";
     if(curr->getLeft() != NULL){
-        cout<<"\tcurr has a left child\n";
+        cout<<"\tcurr has a left child with name = "<<curr->getLeft()->getEntry()->getName()<<endl;
         count++;
     }
     if(curr->getRight() != NULL){
-        cout<<"\tcurr has a right child\n";
+        cout<<"\tcurr has a right child with name = "<<curr->getRight()->getEntry()->getName()<<endl;
         count++;
     }
     return count;
@@ -521,6 +544,7 @@ ostream& operator<< (ostream& out, const TreeDB& rhs){
         cout<<"Tree is not empty\n";
        // out<<rhs->getRoot()->getLeft(); //Prints the left nodes
         //out<<rhs.getRoot()->getLeft();
+        TreeNode *tmp = rhs.getRoot()->getLeft();
         out<<rhs.getRoot();
         //out<<rhs.getRoot()->getRight();
     }
@@ -536,6 +560,8 @@ ostream& operator<< (ostream& out, TreeNode* rhs){                              
         return out; //Don't want to dereference NULL
     }
     cout<<"Checking Left. ";
+    
+    //TreeNode *tmp = rhs->getLeft();
     //Recurse all the way to the left
     if(rhs->getLeft() != NULL){
         cout<<"\tGoing Left from "<<rhs->getEntry()->getName()<<"\n";
@@ -560,8 +586,8 @@ ostream& operator<< (ostream& out, TreeNode* rhs){                              
 int main(int argc, char** argv) {
     cout<<"Creating a new TreeDB\n";
     TreeDB tree;
-    cout<<"Initial print test:\n\t";
-    cout<<tree<<endl;
+//    cout<<"Initial print test:\n\t";
+//    cout<<tree<<endl;
     
 //    cout<<"Creating a new entry with default constructor, to insert\n";
 //    DBentry *newEntry_default = new DBentry();
@@ -577,9 +603,9 @@ int main(int argc, char** argv) {
             <<"\t - cout<<tree\n"
             <<"--------------------\n";
     tree.insert(newEntry1);
-    cout<<"Adding a duplicate name...check for error:\n";
-    DBentry *newEntry2 = new DBentry("Root",15,true);
-    bool insertRoot = tree.insert(newEntry2);
+//    cout<<"Adding a duplicate name...check for error:\n";
+//    DBentry *newEntry2 = new DBentry("Root",15,true);
+//    bool insertRoot = tree.insert(newEntry2);
     cout<<"Creating 5 entries using the second DBentry constructor";
     cout<<"Status for these entries: false, true, false, false, true\n";
     DBentry *newEntry3 = new DBentry("A",1,false);
@@ -594,16 +620,16 @@ int main(int argc, char** argv) {
     bool insertThird = tree.insert(newEntry5);
     bool insertFourth = tree.insert(newEntry6);
     bool insertFifth = tree.insert(newEntry7);
-    
+//    
     cout<<"Inserted all the nodes. \nCommencing the find test\n";
-    DBentry *findThird = tree.find("C");
-    cout<<"\tShould have found 'C'\n";
-    
-    cout<<"count-active test: should return 2\n";
-    tree.countActive();
-    
+//    DBentry *findThird = tree.find("C");
+//    cout<<"\tShould have found 'C'\n";
+//    
+//    cout<<"count-active test: should return 2\n";
+//    tree.countActive();
+//    
     cout<<"Find test completed. Remove tests commencing...\n";
-    cout<<"With this structure, can only test remove of a leaf, or with one subtree\n";
+/*    cout<<"With this structure, can only test remove of a leaf, or with one subtree\n";
     
     cout<<"Leaf remove first...\n";
     bool successfulLeafRemove = tree.remove("E");
@@ -629,20 +655,20 @@ int main(int argc, char** argv) {
     cout<<"Removing non-existant node...\n";
     bool successfulImaginaryRemove = tree.remove("Z");
     cout<<"successful imaginary remove?: "<<successfulImaginaryRemove<<endl;
-    
+    */
     cout<<"Remove tests complete.\n"
             <<"Commencing PrintProbes test...\n";
-    tree.printProbes();
+//    tree.printProbes();
     
     cout<<"PrintProbes test completed.\n"
             <<"Commencing active-count test...should return 0\n";
-    tree.countActive();
+//    tree.countActive();
     
     cout<<"count-active test completed.\n"
             <<"Commencing print test...\n";
-    cout<<"Setting D to active, to see if it's reachable\n";
-    newEntry6->setActive(true);
-    cout<<tree<<endl;
+//    cout<<"Setting D to active, to see if it's reachable\n";
+//    newEntry6->setActive(true);
+//    cout<<tree<<endl;
     
     cout<<"Print test completed.\n";
     cout<<"Commencing tree deletion\n";
@@ -655,7 +681,7 @@ int main(int argc, char** argv) {
     cout<<"ALL TESTS COMPLETE!\n"
             <<"Deleting dynamic data...\n";
     delete newEntry1;
-    delete newEntry2;
+//    delete newEntry2;
     delete newEntry3;
     delete newEntry4;
     delete newEntry5;
@@ -663,7 +689,7 @@ int main(int argc, char** argv) {
     delete newEntry7;
     
     newEntry1 = NULL;
-    newEntry2 = NULL;
+//    newEntry2 = NULL;
     newEntry3 = NULL;
     newEntry4 = NULL;
     newEntry5 = NULL;
